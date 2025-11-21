@@ -23,7 +23,7 @@ For one of the apps, I would like to try to figure out how to point to the best 
 5. I want to add data back into the app for analysis.
 6. Analysis should include both anova and surface area (Still working on including the anova.  I like the surface)
 
-I have tow types of apps that I have in my repo right now
+I have two types of apps that I have in my repo right now
 One is a straight out of box DOE where you set up. 
 Second is based on my windblend doe that I am currently working.  I have the analysis based on the color factors.  So will need to add the other reponse variables that I think are important.  
 
