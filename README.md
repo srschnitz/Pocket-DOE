@@ -1,5 +1,7 @@
 # DOEapps Version 1:  BUGS and LIMITS
 This is an archive version and whwer I started out.  
+I didn't want to lose my early attempts and fun as a reminder of where it all started.  
+The following is the original README
 Creating DOE apps to be used more mobile without coding or software programs (Quick and Easy Versions)
 I am working on a few different DOE experiments myself.  I like that I am able to run via python code (and other). 
 I also am using statistical software to run the experiments and for analysis of them.
