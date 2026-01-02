@@ -1,7 +1,7 @@
-# DOEapps Version 1:  BUGS and LIMITS
-This is an archive version and whwer I started out.  
-I didn't want to lose my early attempts and fun as a reminder of where it all started.  
-The following is the original README
+# Pocket-DOE app
+***PLEASE USE AND PLAY.  ALL COMMENTS, CONCERNS, SUGGESTIONS ARE WELCOMED!!!***
+
+OVERVIEW 
 Creating DOE apps to be used more mobile without coding or software programs (Quick and Easy Versions)
 I am working on a few different DOE experiments myself.  I like that I am able to run via python code (and other). 
 I also am using statistical software to run the experiments and for analysis of them.
@@ -16,18 +16,37 @@ I want it to be a simple way to create and run the DOE without needed the expens
 For analysis, I want a simple anova and surface response visual.  
 For one of the apps, I would like to try to figure out how to point to the best reponse combination.
 ***FIRST ROUNDS***
-1. Three choices for the type of experiment
+Three choices for the type of experiment
    a. Latin Hypercube
    b. Full Factorial
    c. Fractional Factorials
-2. I want a drop down screen of why a certain DOE will be best for your experiment.
-3. I am on the fence about the Design space for the current apps, but will include for furture mixture type apps.
-4. I want the option of range of values and set values.  (The set values, I need to be able to add multiple, not there yet.)
-5. I want to add data back into the app for analysis.
-6. Analysis should include both anova and surface area (Still working on including the anova.  I like the surface)
+ ***SECOND and THIRD ROUNDS***
+ added three more DOE choices
+    d. Plackett-Burman
+    e. Mixture Design 
+    f. Combined Mixture - Process 
+***Additional Features***
+1. Drop down screen of why a certain DOE will be best for your experiment.
+2. Design space for the current apps, but will include for furture mixture type apps.
+3. Option of range of values or set values.  ***(The set values, I need to be able to add multiple, not there yet.)***
+4. Add data back into the app for analysis.
+5. Analysis includes:
+    a. Model Summary
+      Residual Diagnostic Suite (Model Assumption Checks)
+      Notes about the Model
+    b. ANOVA Table
+       Coeffients breakdown included
+    c. Response Surface Contour  ***Still having issues with only the first two factors being used/working on update fix***
+    d. 3D Surface Plot ***My favorite part of app**
+    e. Predicted Optimum ***Doesn't always include all the significant factors**
 
-I have two types of apps that I have in my repo right now
-One is a straight out of box DOE where you set up. 
-Second is based on my windblend doe that I am currently working.  I have the analysis based on the color factors.  So will need to add the other reponse variables that I think are important.  
+Other FIXES or UPDATES that I am working on
+1.  Entering your fix DOE runs that you have used already
+      a. Curently Unable to load an existing DOE Matrix
+      b. Once finish the analysis and close app (or let app sit too long), unable to get back the exact Matrix
+          ***Or, unable to rerun the analysis without generating a new matrix, which doesn't line up with the previous one ran.***
+ 2.  As said in 1, I am having a hard time with the app closing before the experiment has ended and losing my original design to be used for the analysis.  ***BIG FIX NEEDED HERE!!***
+ 3.  More control over Data entry as mentioned before
+ 4.  Error popups: so entering things like try, or symbols will be tagged and there will be a warning.
+    ***If have errors and not fixed prior to analysis portion, will only get errors and need to start over again***
 
-**BOTH NEED TO BE POLISHED AND UPDATED...working on it.
