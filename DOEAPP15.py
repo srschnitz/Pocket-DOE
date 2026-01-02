@@ -16,14 +16,13 @@ import re
 
 st.set_page_config(page_title="Pocket DOE", layout="wide")
 
-# --- Background Image (from repo — safe for deployment) ---
+# --- Background Image (from repo) ---
 def get_base64_image(image_path):
     with open(image_path, "rb") as f:
         data = f.read()
     return base64.b64encode(data).decode()
 
-# Image must be uploaded to repo as background.png
-image_base64 = get_base64_image("background.png")
+image_base64 = get_base64_image("background.png")  # Upload this file to repo
 
 st.markdown(
     f"""
@@ -50,24 +49,35 @@ st.markdown(
 st.title("Pocket DOE")
 st.write("**Smart experiments always at hand**")
 
-# --- STEP 1: Factor Setup ---
+# --- STEP 1: Factor Setup (New: Custom Low/High Levels) ---
 st.subheader("1. Define Your Factors")
 num_factors = st.slider("How many factors?", 2, 10, 3)
 
 factor_data = []
 for i in range(num_factors):
     with st.expander(f"Factor {i+1}", expanded=True):
-        col1, col2 = st.columns([1, 1])
-        name = col1.text_input("Name", f"Factor {i+1}", key=f"name_{i}")
-        use_range = col2.checkbox("Use Range", value=True, key=f"range_{i}")
+        name = st.text_input("Name", f"Factor {i+1}", key=f"name_{i}")
         
-        if use_range:
+        level_type = st.radio(
+            "Level Type",
+            ["Range (Min/Max)", "Custom Levels (Low/High)", "Fixed Value"],
+            key=f"level_type_{i}"
+        )
+        
+        if level_type == "Range (Min/Max)":
             col_min, col_max = st.columns(2)
             min_val = col_min.number_input("Min", value=0.0, key=f"min_{i}")
             max_val = col_max.number_input("Max", value=100.0, key=f"max_{i}")
             factor_data.append({"name": name, "type": "range", "min": min_val, "max": max_val})
-        else:
-            fixed_val = st.number_input("Fixed Value", value=50.0, key=f"fixed_{i}")
+            
+        elif level_type == "Custom Levels (Low/High)":
+            col_low, col_high = st.columns(2)
+            low_val = col_low.number_input("Low Level (-1)", value=20.0, key=f"low_{i}")
+            high_val = col_high.number_input("High Level (+1)", value=80.0, key=f"high_{i}")
+            factor_data.append({"name": name, "type": "custom", "low": low_val, "high": high_val})
+            
+        else:  # Fixed Value
+            fixed_val = st.number_input("Fixed Value (constant)", value=50.0, key=f"fixed_{i}")
             factor_data.append({"name": name, "type": "fixed", "value": fixed_val})
 
 # --- STEP 2: DOE Type ---
@@ -126,7 +136,7 @@ if st.button("Generate DOE Plan", type="primary"):
             doe = lhs(total_factors, samples=actual_runs)
             actual_runs = len(doe)
 
-        # Scaling
+        # Scaling with custom levels support
         scaled = []
         for i, f in enumerate(factor_data):
             if f["type"] == "fixed":
@@ -135,7 +145,10 @@ if st.button("Generate DOE Plan", type="primary"):
                 col = doe[:, i] if doe.ndim > 1 else doe
                 if np.min(col) < 0:
                     col = (col + 1) / 2
-                scaled.append(col * (f["max"] - f["min"]) + f["min"])
+                if f["type"] == "range":
+                    scaled.append(col * (f["max"] - f["min"]) + f["min"])
+                elif f["type"] == "custom":
+                    scaled.append(col * (f["high"] - f["low"]) + f["low"])
 
         df = pd.DataFrame(np.column_stack(scaled).round(3), columns=[f["name"] for f in factor_data])
 
@@ -233,7 +246,6 @@ if st.session_state.get("analysis", False):
                         safe_factor_names = [sanitize_name(name) for name in doe_plan.columns]
                         safe_response = sanitize_name(response_col)
 
-                        # Safe copy — only the selected response
                         merged_safe = merged[doe_plan.columns.tolist() + [response_col]].copy()
                         merged_safe.columns = safe_factor_names + [safe_response]
 
@@ -241,7 +253,7 @@ if st.session_state.get("analysis", False):
                         try:
                             merged_safe[safe_response] = pd.to_numeric(merged_safe[safe_response], errors='coerce')
                             if merged_safe[safe_response].isna().any():
-                                st.error("Response column contains non-numeric values (text, blanks, etc.). Fix your CSV.")
+                                st.error("Response column contains non-numeric values. Fix your CSV.")
                                 st.stop()
                         except:
                             st.error("Response column is not numeric.")
@@ -257,25 +269,22 @@ if st.session_state.get("analysis", False):
 
                         model = ols(formula, data=merged_safe).fit()
 
-                        # Results
                         st.subheader("Model Summary")
                         st.text(model.summary())
 
                         st.subheader("ANOVA Table")
-                        anova_table = sm.stats.anova_lm(model, typ=2)
-                        st.dataframe(anova_table.round(4))
+                        st.dataframe(sm.stats.anova_lm(model, typ=2).round(4))
 
                         st.subheader("Coefficients")
-                        coeffs = pd.DataFrame({
+                        st.dataframe(pd.DataFrame({
                             "Term": model.params.index,
                             "Coefficient": model.params.values,
                             "p-value": model.pvalues.values
-                        }).round(4)
-                        st.dataframe(coeffs)
+                        }).round(4))
 
                         st.write(f"**R² = {model.rsquared:.3f} | Adjusted R² = {model.rsquared_adj:.3f}**")
 
-                        # Contour Plot
+                        # Response Surface
                         st.subheader("Response Surface Contour")
                         col1, col2 = st.columns(2)
                         x_disp = col1.selectbox("X Axis", doe_plan.columns, index=0, key="contour_x")
@@ -299,19 +308,17 @@ if st.session_state.get("analysis", False):
                         fig.update_layout(title=f"Predicted {response_col}", xaxis_title=x_disp, yaxis_title=y_disp)
                         st.plotly_chart(fig, use_container_width=True)
 
-                        # 3D Surface
                         fig_surface = go.Figure(data=go.Surface(x=x_range, y=y_range, z=Z, colorscale='Viridis'))
                         fig_surface.update_layout(title=f"{response_col} 3D Surface", scene=dict(xaxis_title=x_disp, yaxis_title=y_disp, zaxis_title=response_col))
                         st.plotly_chart(fig_surface, use_container_width=True)
 
-                        # Optimum
                         best_idx = np.argmax(Z)
                         best_x, best_y = X_grid.ravel()[best_idx], Y_grid.ravel()[best_idx]
                         st.success(f"**Predicted Optimum:** {x_disp} = {best_x:.2f}, {y_disp} = {best_y:.2f} → {response_col} = {Z.max():.2f}")
 
         except Exception as e:
             st.error(f"Analysis failed: {e}")
-            st.info("Check that response is numeric and column names are unique. Try regenerating the plan if issues persist.")
+            st.info("Check response is numeric and names are unique. Try regenerating the plan.")
 
 st.caption("Pocket DOE — Built for real bench work. Made with ❤️ by a former chemist.")
 # In[ ]:
