@@ -1,6 +1,0 @@
-streamlit
-pandas
-numpy
-pyDOE3
-plotly
-statsmodels
