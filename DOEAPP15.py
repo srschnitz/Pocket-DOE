@@ -23,7 +23,7 @@ def get_base64_image(image_path):
         data = f.read()
     return base64.b64encode(data).decode()
 
-image_base64 = get_base64_image("C:/Users/srsch/Downloads/VctyxhRZVR4R1CwxVrdJ6.png")
+image_base64 = get_base64_image("background.png")
 
 st.markdown(
     f"""
