@@ -3,7 +3,6 @@
 
 # In[1]:
 
-
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -17,12 +16,13 @@ import re
 
 st.set_page_config(page_title="Pocket DOE", layout="wide")
 
-# --- Background Image ---
+# --- Background Image (from repo — safe for deployment) ---
 def get_base64_image(image_path):
     with open(image_path, "rb") as f:
         data = f.read()
     return base64.b64encode(data).decode()
 
+# Image must be uploaded to repo as background.png
 image_base64 = get_base64_image("background.png")
 
 st.markdown(
@@ -60,7 +60,7 @@ for i in range(num_factors):
         col1, col2 = st.columns([1, 1])
         name = col1.text_input("Name", f"Factor {i+1}", key=f"name_{i}")
         use_range = col2.checkbox("Use Range", value=True, key=f"range_{i}")
-
+        
         if use_range:
             col_min, col_max = st.columns(2)
             min_val = col_min.number_input("Min", value=0.0, key=f"min_{i}")
@@ -203,19 +203,19 @@ if st.session_state.get("analysis", False):
         try:
             results = pd.read_csv(uploaded)
             doe_plan = st.session_state.doe_plan
-
+            
             merged = pd.merge(doe_plan.round(6), results.round(6), on=list(doe_plan.columns), how='inner')
             if merged.empty:
                 st.error("No matching runs — check column names/values.")
             else:
                 st.success(f"Loaded {len(merged)} runs!")
                 st.dataframe(merged, use_container_width=True)
-
+                
                 response_options = [col for col in merged.columns if col not in doe_plan.columns]
                 if not response_options:
                     st.error("No response columns found.")
                     st.stop()
-
+                
                 response_col = st.selectbox("Select Response", response_options, key="response_select")
 
                 if st.button("Run Analysis", key="run_analysis"):
@@ -314,8 +314,6 @@ if st.session_state.get("analysis", False):
             st.info("Check that response is numeric and column names are unique. Try regenerating the plan if issues persist.")
 
 st.caption("Pocket DOE — Built for real bench work. Made with ❤️ by a former chemist.")
-
-
 # In[ ]:
 
 
